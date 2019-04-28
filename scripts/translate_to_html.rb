@@ -58,6 +58,8 @@
 #                            Just writes temp.config.
 #  --util="foo"
 #                            Provides certain utility functions rather than doing a format conversion to html.
+#  --blind
+#                            Produce a version for blind people. Html5 with mathml, no figures.
 # notes on handheld output:
 #   see calc book for example of handheld.config
 #   the idea is to output xhtml that calibre can convert to epub, etc.
@@ -219,7 +221,8 @@ opts = GetoptLong.new(
   [ "--no_write",              GetoptLong::NO_ARGUMENT ],
   [ "--override_config_with",  GetoptLong::REQUIRED_ARGUMENT ],
   [ "--write_config_and_exit", GetoptLong::NO_ARGUMENT ],
-  [ "--util",                  GetoptLong::REQUIRED_ARGUMENT ]
+  [ "--util",                  GetoptLong::REQUIRED_ARGUMENT ],
+  [ "--blind",                 GetoptLong::NO_ARGUMENT ]
 )
 
 opts_hash = Hash.new
@@ -238,6 +241,7 @@ $no_write              = opts_hash['--no_write']!=nil
 $override_config_with  = opts_hash['--override_config_with']
 $write_config_and_exit  = opts_hash['--write_config_and_exit']
 $util                  = opts_hash['--util']
+$blind                 = opts_hash['--blind']!=nil
 
 $xhtml = $modern
 $format = {'wiki'=>$wiki,'xhtml'=>$xhtml,'modern'=>$modern,'html5'=>$html5}
@@ -1871,6 +1875,7 @@ def handle_math_one_html(tex,math_type)
       surround = (math_type!='inline' && math_type!='equation') 
       t = 'temp_mathml'
       if surround then original = "\\begin{#{math_type}}" + original + "\\end{#{math_type}}" end
+      original.gsub!(/\\eqquad/,'')
       File.open("#{t}.tex",'w') do |f| f.print original end
       unless system("footex --prepend-file #{$config['sty_dir']}/lmmath.sty --mathml #{t}.tex #{t}.html") then return nil end
       y = nil
@@ -1946,6 +1951,7 @@ end
 # translate one particular equation to a bitmap; return the html code to display the bitmap
 # if the type isn't inline, then we put div's around the equation(s)
 def handle_math_one_bitmap(tex,math_type)
+    if $blind then return '' end
     m = tex.clone
     scale = $config['scale_for_bitmapped_equations']
 
@@ -2209,6 +2215,11 @@ def find_topic(ch,book,own)
   t2 = $topic_map['2']
   x = t2[book]
   if x!=nil and x[ch_string]!=nil then own.push("../share/#{x[ch_string]}/figs") end
+
+  t3 = $topic_map['3']
+  x = t3[book]
+  if x!=nil and x[ch_string]!=nil then own.push("../share/#{x[ch_string]}/figs") end
+
   return own
 end
 
@@ -2278,7 +2289,7 @@ def find_figure(name,width_type)
 
   base = "#{dir}/#{name}."
   if dir==nil then
-    $stderr.print "translate_to_html: error finding figure #{base}*, not found in any of these dirs: ",possible_dirs.join(','),", relative to cwd=#{Dir.getwd()}\n"
+    $stderr.print "translate_to_html: error finding figure #{base}*, not found in any of these dirs: ",possible_dirs.join(','),", relative to cwd=#{Dir.getwd()}; one way to fix this might be to edit topic_map.json\n"
     exit(-1)
   else
     result = "#{dir}/#{name}.#{fmt}"
@@ -2291,7 +2302,7 @@ def find_figure(name,width_type)
   if name==nil then $stderr.print "error in translate_to_html.rb, find_figure, name is nil\n"; exit(-1) end
   if $config['html_dir']==nil then $stderr.print "error in translate_to_html.rb, find_figure, $config['html_dir'] is nil\n"; exit(-1) end
   dest = $config['html_dir'] + '/' + "ch#{$ch}/figs/" + name + '.' + output_format
-  unless File.exist?(dest) then
+  unless File.exist?(dest) || $blind then
     # need to call ImageMagick even if input and output formats are the same, to convert to web resolution
     infile = base+fmt
     did_it = false
