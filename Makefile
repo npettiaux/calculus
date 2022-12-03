@@ -176,4 +176,4 @@ setup:
 figures:
 	./gen_graph.rb ch*/*.tex
 	# The following requires Inkscape 0.47 or later.
-	perl -e 'foreach my $$f(<ch*/figs/*.svg>) {$$g=$$f; $$g=~s/\.svg$$/.pdf/; unless (-e $$g) {print "g=$$g\n"; $$c="inkscape --export-text-to-path --export-filename=$$g $$f  --export-area-drawing"; print "$$c\n"; system($$c)}}'
+	perl -e 'foreach my $$f(<ch*/figs/*.svg>) {$$g=$$f; $$g=~s/\.svg$$/.pdf/; unless (-e $$g) {print "g=$$g\n"; $$c="inkscape --export-text-to-path --export-pdf=$$g $$f  --export-area-drawing"; print "$$c\n"; system($$c)}}'

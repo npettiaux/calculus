@@ -19,8 +19,11 @@ Go to the main directory (the one where you found this README).
 
 Do
   make setup
-This will check that you have at least inkscape 0.47 and ruby 1.9 and set all
+This will check that you have at least ruby 1.9 and set all
 the scripts to be executable.
+
+If you're running Inkscape 0.93 or later, change --export-pdf in the
+Makefile to --export-filename.
 
 Then:
   make figures
