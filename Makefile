@@ -154,8 +154,7 @@ prepress:
 	# The following makes Lulu not complain about missing fonts:
 	scripts/pdf_extract_pages.rb calc.pdf 3-end calc_lulu.pdf
 	# Filtering through gs used to be necessary to convince Lulu not to complain about missing fonts.
-	# Now that should no longer be necessary, because recent versions of pdftex embed all fonts, and fullembed.map prevents subsetting.
-	# See meki:computer:apps:ghostscript, scripts/create_fullembed_file, and http://tex.stackexchange.com/questions/24002/turning-off-font-subsetting-in-pdftex
+	# Now that should no longer be necessary, because recent versions of pdftex embed all fonts.
 
 post_source:
 	# don't forget to commit first, git commit -a -m "comment"
@@ -177,4 +176,4 @@ setup:
 figures:
 	./gen_graph.rb ch*/*.tex
 	# The following requires Inkscape 0.47 or later.
-	perl -e 'foreach my $$f(<ch*/figs/*.svg>) {$$g=$$f; $$g=~s/\.svg$$/.pdf/; unless (-e $$g) {print "g=$$g\n"; $$c="inkscape --export-text-to-path --export-pdf=$$g $$f  --export-area-drawing"; print "$$c\n"; system($$c)}}'
+	perl -e 'foreach my $$f(<ch*/figs/*.svg>) {$$g=$$f; $$g=~s/\.svg$$/.pdf/; unless (-e $$g) {print "g=$$g\n"; $$c="inkscape --export-text-to-path --export-filename=$$g $$f  --export-area-drawing"; print "$$c\n"; system($$c)}}'
